@@ -390,7 +390,7 @@ class Args(Namespace):
     no_verible: Optional[bool]
     no_verilator: Optional[bool]
     online: Optional[str]
-    open: Optional[bool]
+    vscode: Optional[bool]
     out: Optional[str]
     reporter: Optional[str]
     sub_action: Optional[str]
@@ -428,8 +428,8 @@ def parse_args():
     lint.add_argument("--no-iverilog", action="store_true", dest="no_iverilog")
     lint.add_argument("--no-verible", action="store_true", dest="no_verible")
     make.add_argument("files", metavar="targets", nargs="*")
-    synthesize.add_argument("-O", "--online")
-    synthesize.add_argument("-o", "--open", action="store_true")
+    synthesize.add_argument("-o", "--online")
+    synthesize.add_argument("-v", "--vscode", action="store_true")
     synthesize.add_argument("-w", "--wait", action="store_true")
 
     autocomplete(parser)
@@ -484,7 +484,7 @@ match args.action:
 
             print("\n> xdg-open")
             run_xdg_open(f"{args.online}?data={file.stem}")
-        elif args.open:
+        elif args.vscode:
             json = {
                 "sources": [
                     {"relpath": temp_sv.name},

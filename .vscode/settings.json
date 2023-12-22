@@ -2,5 +2,21 @@
 	"python.analysis.typeCheckingMode": "strict",
 	"xo.options": {
 		"prettier": true
-	}
+	},
+	"cSpell.words": [
+		"fgetc",
+		"ifndef",
+		"iverilog",
+		"Mano",
+		"NEGEDGE",
+		"SUBLABEL",
+		"synthesizable",
+		"testbench",
+		"testbenches",
+		"Verible",
+		"Verilator",
+		"Verilog",
+		"VHDL",
+		"Yosys"
+	]
 }
