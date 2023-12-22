@@ -1,0 +1,122 @@
+`include "preamble.sv"
+`IMPORT(assembler)
+
+  `ASM_CALL(sub_set_st)
+  `ASM_DATA_LABEL(str_msg)
+  `ASM_CALL(sub_get_ln)
+  `ASM_DATA_LABEL(str_input)
+  `ASM_CALL(sub_rev_st)
+  `ASM_DATA_LABEL(str_input)
+  `ASM_CALL(sub_set_st)
+  `ASM_DATA_LABEL(str_rev)
+  `ASM_CALL(sub_set_ln)
+  `ASM_DATA_LABEL(str_input)
+  `ASM_HLT
+
+`ASM_SUBROUTINE(sub_get_ch)
+`ASM_SUBLABEL(await)
+  `ASM_SKI
+  `ASM_BUN_DS(await)
+  `ASM_INP
+  `ASM_CALL(sub_set_ch)
+  `ASM_RETURN()
+
+`ASM_SUBROUTINE(sub_get_ln)
+  `ASM_ARG_NEXT(ptr)
+`ASM_SUBLABEL(char)
+  `ASM_CALL(sub_get_ch)
+  `ASM_STA_IS(ptr)
+  `ASM_ADD_DL(chr_lf_neg)
+  `ASM_SZA
+  `ASM_ISZ_DS(ptr)
+  `ASM_SZA
+  `ASM_BUN_DS(char)
+  `ASM_CLA
+  `ASM_STA_IS(ptr)
+  `ASM_RETURN()
+`ASM_SUBLABEL(ptr)
+  `ASM_DATA(0)
+
+`ASM_SUBROUTINE(sub_set_ch)
+`ASM_SUBLABEL(await)
+  `ASM_SKO
+  `ASM_BUN_DS(await)
+  `ASM_OUT
+  `ASM_RETURN()
+
+`ASM_SUBROUTINE(sub_set_st)
+  `ASM_ARG_NEXT(ptr)
+`ASM_SUBLABEL(char)
+  `ASM_LDA_IS(ptr)
+  `ASM_ISZ_DS(ptr)
+  `ASM_SZA
+  `ASM_CALL(sub_set_ch)
+  `ASM_SZA
+  `ASM_BUN_DS(char)
+  `ASM_RETURN()
+`ASM_SUBLABEL(ptr)
+  `ASM_DATA(0)
+
+`ASM_SUBROUTINE(sub_set_ln)
+  `ASM_ARG_NEXT(arg)
+  `ASM_CALL(sub_set_st)
+`ASM_SUBLABEL(arg)
+  `ASM_DATA(0)
+  `ASM_LDA_DL(chr_lf)
+  `ASM_CALL(sub_set_ch)
+  `ASM_RETURN()
+
+`ASM_SUBROUTINE(sub_rev_st)
+  `ASM_ARG_NEXT(bgn)
+  `ASM_STA_DS(ptr)
+`ASM_SUBLABEL(find_ptr)
+  `ASM_LDA_IS(ptr)
+  `ASM_SZA
+  `ASM_ISZ_DS(ptr)
+  `ASM_SZA
+  `ASM_BUN_DS(find_ptr)
+  `ASM_LDA_DS(bgn)
+  `ASM_CMA
+  `ASM_INC
+  `ASM_ADD_DS(ptr)
+  `ASM_SHR
+  `ASM_ADD_DS(bgn)
+  `ASM_STA_DS(mid)
+`ASM_SUBLABEL(loop)
+  `ASM_LDA_DS(ptr)
+  `ASM_ADD_DL(int_neg_one)
+  `ASM_STA_DS(ptr)
+  `ASM_CMA
+  `ASM_INC
+  `ASM_ADD_DS(mid)
+  `ASM_SNA
+  `ASM_RETURN()
+  `ASM_LDA_IS(bgn)
+  `ASM_STA_DS(tmp)
+  `ASM_LDA_IS(ptr)
+  `ASM_STA_IS(bgn)
+  `ASM_LDA_DS(tmp)
+  `ASM_STA_IS(ptr)
+  `ASM_ISZ_DS(bgn)
+  `ASM_BUN_DS(loop)
+`ASM_SUBLABEL(bgn)
+  `ASM_DATA(0)
+`ASM_SUBLABEL(ptr)
+  `ASM_DATA(0)
+`ASM_SUBLABEL(mid)
+  `ASM_DATA(0)
+`ASM_SUBLABEL(tmp)
+  `ASM_DATA(0)
+
+`ASM_LABEL(int_neg_one)
+  `ASM_DATA(-1)
+`ASM_LABEL(chr_lf)
+  `ASM_DATA('hA)
+`ASM_LABEL(chr_lf_neg)
+  `ASM_DATA(-'hA)
+`ASM_LABEL(str_msg)
+  `ASM_DATA_STR("Enter your message: \0")
+`ASM_LABEL(str_rev)
+  `ASM_DATA_STR("Its reverse is: \0")
+`ASM_LABEL(str_input)
+  `ASM_DATA(0)

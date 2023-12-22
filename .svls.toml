@@ -1,0 +1,4 @@
+[verilog]
+
+[option]
+linter = true
