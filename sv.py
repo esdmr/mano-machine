@@ -109,6 +109,7 @@ def run_iverilog(
     *,
     output: Optional[Path] = None,
     output_format: Optional[str] = None,
+    target_flags: list[str] = [],
     preprocess_only: bool = False,
     no_vpi: bool = False,
 ):
@@ -138,6 +139,9 @@ def run_iverilog(
 
     if preprocess_only:
         args.append("-E")
+
+    for i in target_flags:
+        args.append(f"-p{i}")
 
     return run(args, cwd=file.parent, check=True)
 
@@ -382,6 +386,7 @@ class Action:
 
 
 class Args(Namespace):
+    target_flags: Optional[list[str]]
     action: Optional[str]
     file: Optional[str]
     files: Optional[list[str]]
@@ -423,6 +428,7 @@ def parse_args():
 
     run.add_argument("--no-vpi", action="store_true", dest="no_vpi")
     compile.add_argument("-t", "--type")
+    compile.add_argument("-p", "--target-flag", nargs="*", dest="target_flags")
     test.add_argument("-r", "--reporter")
     lint.add_argument("--no-verilator", action="store_true", dest="no_verilator")
     lint.add_argument("--no-iverilog", action="store_true", dest="no_iverilog")
@@ -527,7 +533,12 @@ match args.action:
     case Action.COMPILE:
         assert args.file
         assert args.out
-        run_iverilog(Path(args.file), output=Path(args.out), output_format=args.type)
+        run_iverilog(
+            Path(args.file),
+            output=Path(args.out),
+            output_format=args.type,
+            target_flags=args.target_flags or [],
+        )
 
     case Action.PREPROCESS:
         assert args.file
