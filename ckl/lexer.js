@@ -57,6 +57,7 @@ export const lexer = nearley.lexer.states({
 				keyword_if: 'if',
 				keyword_inline: 'inline',
 				keyword_return: 'return',
+				keyword_sizeof: 'sizeof',
 				keyword_static: 'static',
 				keyword_struct: 'struct',
 				keyword_switch: 'switch',

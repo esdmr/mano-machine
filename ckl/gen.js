@@ -339,7 +339,7 @@ export class Context {
 							},
 							(_, i) =>
 								new asm.Operand(
-									`${name}_${i}`,
+									i ? `${name}_${i}` : name,
 									defaultValues[i] ?? defaultValues.at(-1),
 									'variable',
 								),
@@ -393,7 +393,11 @@ export class Context {
 									length: size,
 								},
 								(_, i) =>
-									new asm.Operand(`${name}_${i}`, undefined, 'parameter'),
+									new asm.Operand(
+										i ? `${name}_${i}` : name,
+										undefined,
+										'parameter',
+									),
 							);
 						}),
 						body,
@@ -727,20 +731,18 @@ export class Context {
 			}
 
 			case ast.postDecrement: {
-				const dec = this.getScratchConstant(-1);
 				const [ref] = node.args;
 				const scratch = this.getScratchVariable(
 					new ast.Node(node.pos, ast.reference, ref),
 				);
 				this.add(new asm.Instruction(asm.lda, scratch, true));
-				this.add(new asm.Instruction(asm.add, dec));
+				this.add(new asm.Instruction(asm.add, this.getScratchConstant(-1)));
 				this.add(new asm.Instruction(asm.sta, scratch, true));
 				this.relinquishScratchVariable(scratch);
 				break;
 			}
 
 			case ast.preIncrement: {
-				const dec = this.getScratchConstant(-1);
 				const [ref] = node.args;
 				const scratch = this.getScratchVariable(
 					new ast.Node(node.pos, ast.reference, ref),
@@ -749,18 +751,17 @@ export class Context {
 				this.add(new asm.Instruction(asm.inc));
 				this.add(new asm.Instruction(asm.sta, scratch, true));
 				this.relinquishScratchVariable(scratch);
-				this.add(new asm.Instruction(asm.add, dec));
+				this.add(new asm.Instruction(asm.add, this.getScratchConstant(-1)));
 				break;
 			}
 
 			case ast.preDecrement: {
-				const dec = this.getScratchConstant(-1);
 				const [ref] = node.args;
 				const scratch = this.getScratchVariable(
 					new ast.Node(node.pos, ast.reference, ref),
 				);
 				this.add(new asm.Instruction(asm.lda, scratch, true));
-				this.add(new asm.Instruction(asm.add, dec));
+				this.add(new asm.Instruction(asm.add, this.getScratchConstant(-1)));
 				this.add(new asm.Instruction(asm.sta, scratch, true));
 				this.relinquishScratchVariable(scratch);
 				this.add(new asm.Instruction(asm.inc));
@@ -942,8 +943,12 @@ export class Context {
 						);
 					}
 
-					const mask = this.getScratchConstant(0xff_ff << places);
-					this.add(new asm.Instruction(asm.and, mask));
+					this.add(
+						new asm.Instruction(
+							asm.and,
+							this.getScratchConstant(0xff_ff << places),
+						),
+					);
 				}
 
 				break;
@@ -974,8 +979,12 @@ export class Context {
 						);
 					}
 
-					const mask = this.getScratchConstant(0xff_ff >> places);
-					this.add(new asm.Instruction(asm.and, mask));
+					this.add(
+						new asm.Instruction(
+							asm.and,
+							this.getScratchConstant(0xff_ff >> places),
+						),
+					);
 				}
 
 				break;
@@ -1004,8 +1013,6 @@ export class Context {
 						this.add(new asm.Instruction(asm.cir));
 					}
 				} else {
-					const mask = this.getScratchConstant(0xff_ff >> places);
-
 					const value = this.getScratchVariable(left);
 					this.add(new asm.Instruction(asm.spa));
 					this.loadConstant(~0xff_ff >> places);
@@ -1023,7 +1030,12 @@ export class Context {
 						);
 					}
 
-					this.add(new asm.Instruction(asm.and, mask));
+					this.add(
+						new asm.Instruction(
+							asm.and,
+							this.getScratchConstant(0xff_ff >> places),
+						),
+					);
 					this.add(new asm.Instruction(asm.add, signedFill));
 					this.relinquishScratchVariable(signedFill);
 				}
@@ -1064,10 +1076,12 @@ export class Context {
 							declaration.operands[parts[0]],
 							'Variable does not have the given index',
 						);
-						const label = this.getScratchConstant(
-							declaration.operands[parts[0]],
+						this.add(
+							new asm.Instruction(
+								asm.lda,
+								this.getScratchConstant(declaration.operands[parts[0]]),
+							),
 						);
-						this.add(new asm.Instruction(asm.lda, label));
 					} else {
 						const scratch = this.getScratchVariable(
 							new ast.Node(node.pos, ast.reference, array),
@@ -1082,12 +1096,20 @@ export class Context {
 					const declaration = this.get(name);
 
 					if (declaration instanceof VariableDeclaration) {
-						const label = this.getScratchConstant(declaration.operands[0]);
-						this.add(new asm.Instruction(asm.lda, label));
+						this.add(
+							new asm.Instruction(
+								asm.lda,
+								this.getScratchConstant(declaration.operands[0]),
+							),
+						);
 					} else {
 						assert(declaration, 'Identifier does not reference anything');
-						const label = this.getScratchConstant(declaration.reference);
-						this.add(new asm.Instruction(asm.lda, label));
+						this.add(
+							new asm.Instruction(
+								asm.lda,
+								this.getScratchConstant(declaration.reference),
+							),
+						);
 					}
 				} else {
 					throw new Error('Unsupported node type for reference');
@@ -1583,8 +1605,12 @@ export class Context {
 						);
 					}
 
-					const mask = this.getScratchConstant(0xff_ff << places);
-					this.add(new asm.Instruction(asm.and, mask));
+					this.add(
+						new asm.Instruction(
+							asm.and,
+							this.getScratchConstant(0xff_ff << places),
+						),
+					);
 				}
 
 				this.add(new asm.Instruction(asm.sta, scratch, true));
@@ -1621,8 +1647,12 @@ export class Context {
 						);
 					}
 
-					const mask = this.getScratchConstant(0xff_ff >> places);
-					this.add(new asm.Instruction(asm.and, mask));
+					this.add(
+						new asm.Instruction(
+							asm.and,
+							this.getScratchConstant(0xff_ff >> places),
+						),
+					);
 				}
 
 				this.add(new asm.Instruction(asm.sta, scratch, true));
@@ -1658,8 +1688,6 @@ export class Context {
 						this.add(new asm.Instruction(asm.cir));
 					}
 				} else if (places > 3) {
-					const mask = this.getScratchConstant(0xff_ff >> places);
-
 					this.add(new asm.Instruction(asm.lda, scratch, true));
 					this.add(new asm.Instruction(asm.spa));
 					this.loadConstant(~0xff_ff >> places);
@@ -1676,7 +1704,12 @@ export class Context {
 						);
 					}
 
-					this.add(new asm.Instruction(asm.and, mask));
+					this.add(
+						new asm.Instruction(
+							asm.and,
+							this.getScratchConstant(0xff_ff >> places),
+						),
+					);
 					this.add(new asm.Instruction(asm.add, signedFill));
 					this.relinquishScratchVariable(signedFill);
 				}
@@ -1755,6 +1788,18 @@ export class Context {
 				);
 				assert(declaration.operands[0], 'Variable has a zero size');
 				this.add(new asm.Instruction(asm.lda, declaration.operands[0]));
+				break;
+			}
+
+			case ast.sizeof: {
+				const [name] = node.args;
+				assert(typeof name === 'string', 'Identifier is not a string');
+				const declaration = this.get(name);
+				assert(
+					declaration instanceof VariableDeclaration,
+					'Sizeof does not reference a variable',
+				);
+				this.loadConstant(declaration.operands.length);
 				break;
 			}
 
@@ -2024,6 +2069,17 @@ export class Context {
 				return this.evaluateZipped(condition, trueBranch, falseBranch).map(
 					([i, j, k]) => (i ? j : k),
 				);
+			}
+
+			case ast.sizeof: {
+				const [name] = node.args;
+				assert(typeof name === 'string', 'Identifier is not a string');
+				const declaration = this.get(name);
+				assert(
+					declaration instanceof VariableDeclaration,
+					'Sizeof does not reference a variable',
+				);
+				return [declaration.operands.length];
 			}
 
 			case ast.list: {

@@ -56,6 +56,7 @@ export const identifier = 'idn';
 export const specialIdentifier = 'ids';
 export const list = 'lst';
 export const assembly = 'asm';
+export const sizeof = 'len';
 
 export class Node {
 	/**

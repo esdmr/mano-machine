@@ -129,6 +129,7 @@ exp_unary -> %plus _ exp_unary {% ([,, e]) => e %}
 exp_unary -> %minus _ exp_unary {% ([,, e], ref) => new ast.Node(ref, ast.negative, e) %}
 exp_unary -> %bool_not _ exp_unary {% ([,, e], ref) => new ast.Node(ref, ast.logicalNot, e) %}
 exp_unary -> %complement _ exp_unary {% ([,, e], ref) => new ast.Node(ref, ast.bitwiseNot, e) %}
+exp_unary -> %keyword_sizeof _ %left_paren _ %identifier _ %right_paren {% ([,, _paren,, id], ref) => new ast.Node(ref, ast.sizeof, id.value) %}
 exp_unary -> exp_postfix {% id %}
 
 exp_additive -> exp_additive _ %plus _ exp_unary {% ([a,, _op,, b], ref) => new ast.Node(ref, ast.add, a, b) %}
@@ -188,5 +189,4 @@ exp -> exp _ %comma _ exp_assignment {% ([a,, _op,, b]) => ast.Node.concat(a, b)
 exp -> exp_assignment {% id %}
 
 _ -> whitespace:* {% () => undefined %}
-__ -> whitespace:+ {% () => undefined %}
 whitespace -> %whitespace | %line_comment | %block_comment {% () => undefined %}
