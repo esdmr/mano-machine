@@ -144,3 +144,59 @@ To replace `$fgetc`, We will implement the necessary logic in C and load the
 `vpi/io.c`. It supports both Windows (untested) and Linux. If you would like to
 avoid using this module for some reason, you can pass the `--no-vpi` option to
 the `./sv.py run` command.
+
+## The CKL programming language
+
+Pronounced like “sickle”, it is a C-like programming language specifically for
+the Mano Machine. It is currently a work in progress. It also does not do many
+optimizations, mostly those that the user cannot do without resorting to inline
+assembly.
+
+```c
+// Top-level variable declaration
+a;
+// Top-level variable declaration with initializer
+b = 123;
+
+// Forward declaration
+add(a, b);
+
+// Function declaration
+add(a, b) {
+  // Last expression is returned automatically.
+  a + b;
+}
+
+// Special function declarations
+$start() { /* … */ }
+$isr()   { /* … */ }
+
+io() {
+  // Asynchronous input
+  a = $input;
+  // Synchronous input
+  a = $input();
+
+  // Asynchronous input
+  $output = a;
+  // Synchronous input
+  $output(a)
+
+  // I/O flags
+  do; while (!$fgo);
+  do; while (!$fgi);
+
+  // IEN flag
+  $ien = 1;
+  $ien = 0;
+
+  // Address of the word immediately after the assembly program.
+  string = $post;
+
+  // Inline assembly
+  asm("`ASM_ISZ_DL(%s)", a);
+}
+
+// Also inline assembly
+asm("`ASM_ADDR_REL(2)");
+```

@@ -1,0 +1,50 @@
+str_msg = "Enter your message: \u{0}";
+str_rev = "Its reverse is: \u{0}";
+
+set_ch(ch) {
+	$output(ch);
+}
+
+set_st(ptr) {
+	for (ch; (ch = ptr*) != 0; ++ptr) {
+		set_ch(ch);
+	}
+}
+
+set_ln(ptr) {
+	set_st(ptr);
+	set_ch('\n');
+}
+
+get_ch() {
+	ch = $input();
+	set_ch(ch);
+	ch;
+}
+
+get_ln(ptr) {
+	for (ch; (ch = get_ch()) != '\n'; ++ptr) {
+		ptr* = ch;
+	}
+
+	ptr* = 0;
+}
+
+rev_st(ptr) {
+	bgn = ptr;
+	while (ptr* != 0) ++ptr;
+
+	for (mid = ((ptr - bgn) >> 1) + bgn; mid < --ptr; ++bgn) {
+		tmp = bgn*;
+		bgn* = ptr*;
+		ptr* = tmp;
+	}
+}
+
+$start() {
+	set_st(str_msg&);
+	get_ln($post);
+	rev_st($post);
+	set_st(str_rev&);
+	set_ln($post);
+}

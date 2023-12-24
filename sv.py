@@ -259,6 +259,11 @@ def run_make(*targets: str):
 
     return run(args, cwd=Path("vpi"), check=True)
 
+def run_pnpm(*args: str):
+    return run(["corepack", "pnpm", *args], cwd=Path("ckl"), check=True)
+
+def run_node(*args: str):
+    return run(["node", *args], check=True)
 
 def formatFile(file: Path):
     with open(file, "r") as f:
@@ -374,6 +379,7 @@ class ExceptionAggregator:
 
 
 class Action:
+    CKL = "ckl"
     COMPILE = "compile"
     FORMAT = "format"
     LINT = "lint"
@@ -407,6 +413,7 @@ def parse_args():
     parser = ArgumentParser()
     subparsers = parser.add_subparsers(dest="action", required=True)
 
+    ckl = subparsers.add_parser(Action.CKL)
     compile = subparsers.add_parser(Action.COMPILE)
     format = subparsers.add_parser(Action.FORMAT)
     lint = subparsers.add_parser(Action.LINT)
@@ -420,10 +427,10 @@ def parse_args():
     for i in {test, lint, format}:
         i.add_argument("files", nargs="*")
 
-    for i in {synthesize, run, compile, preprocess}:
+    for i in {synthesize, run, compile, preprocess, ckl}:
         i.add_argument("file")
 
-    for i in {compile, preprocess}:
+    for i in {compile, preprocess, ckl}:
         i.add_argument("-o", "--out", required=True)
 
     run.add_argument("--no-vpi", action="store_true", dest="no_vpi")
@@ -646,6 +653,13 @@ match args.action:
 
     case Action.MAKE:
         run_make(*args.files or [])
+        if not args.files:
+            run_pnpm("install")
+
+    case Action.CKL:
+        assert args.file
+        assert args.out
+        run_node("ckl/index.js", args.file, args.out)
 
     case _:
         raise ValueError(f"Unknown action: {args.action}")
