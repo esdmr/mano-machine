@@ -125,7 +125,9 @@ export class Context {
 	 * @param {number | asm.Operand} value
 	 */
 	getScratchConstant(value) {
-		if (typeof value === 'number') value = asm.mod(value);
+		if (typeof value === 'number') {
+			value = asm.mod(value);
+		}
 
 		if (this.shared.scratchConstants.has(value)) {
 			const operand = this.shared.scratchConstants.get(value);
@@ -150,7 +152,9 @@ export class Context {
 	 * @param {number | asm.Operand} value
 	 */
 	loadConstant(value) {
-		if (typeof value === 'number') value = asm.mod(value);
+		if (typeof value === 'number') {
+			value = asm.mod(value);
+		}
 
 		if (value) {
 			this.add(new asm.Instruction(asm.lda, this.getScratchConstant(value)));
@@ -174,8 +178,8 @@ export class Context {
 				const declaration = this.get(name);
 
 				if (
-					declaration instanceof VariableDeclaration &&
-					declaration.operands[0]
+					declaration instanceof VariableDeclaration
+					&& declaration.operands[0]
 				) {
 					return declaration.operands[0];
 				}
@@ -192,7 +196,7 @@ export class Context {
 			return operand;
 		}
 
-		const operand = new asm.Operand(`scratch`, undefined, 'scratch');
+		const operand = new asm.Operand('scratch', undefined, 'scratch');
 		const declaration = new VariableDeclaration([operand]);
 
 		this.shared.deferredDeclarations.add(declaration);
@@ -203,8 +207,9 @@ export class Context {
 	 * @param {asm.Operand | undefined} operand
 	 */
 	relinquishScratchVariable(operand) {
-		if (operand && operand.extra === 'scratch')
+		if (operand && operand.extra === 'scratch') {
 			this.scratchVariables.push(operand);
+		}
 	}
 
 	applyDeferred() {
@@ -247,16 +252,18 @@ export class Context {
 			context.applyDeferred();
 		}
 
+		const [label, start, isr] = context.shared.instructions;
+		assert(label);
+		assert(start);
+		assert(isr);
+
 		if (!context.declarations.has('$isr')) {
-			context.shared.instructions[2] = new asm.Instruction(asm.blank);
+			isr.into(new asm.Instruction(asm.blank));
+			label.into(new asm.Instruction(asm.blank));
 		}
 
 		if (!context.declarations.has('$start')) {
-			context.shared.instructions[1] = new asm.Instruction(asm.hlt);
-		}
-
-		if (!context.declarations.has('$isr')) {
-			context.shared.instructions[0] = new asm.Instruction(asm.blank);
+			start.into(new asm.Instruction(asm.hlt));
 		}
 
 		context.shared.instructions.push(
@@ -270,7 +277,9 @@ export class Context {
 		const operandNames = new Map();
 
 		for (const i of context.shared.instructions) {
-			if (!i.operand) continue;
+			if (!i.operand) {
+				continue;
+			}
 
 			/** @type {OperandInfo} */
 			const info = operandNames.get(i.operand.name) ?? {
@@ -288,11 +297,14 @@ export class Context {
 		/**
 		 * @type {Set<asm.Operand>}
 		 */
-		const processedItems = new Set();
+		const processedOperands = new Set();
 
 		for (const i of context.shared.instructions) {
-			if (!i.operand || processedItems.has(i.operand)) continue;
-			processedItems.add(i.operand);
+			if (!i.operand || processedOperands.has(i.operand)) {
+				continue;
+			}
+
+			processedOperands.add(i.operand);
 			const info = operandNames.get(i.operand.name);
 			assert(info);
 			const newId = info.map.get(i.operand.id);
@@ -366,8 +378,8 @@ export class Context {
 					forwardDeclaration.body = body;
 					forwardDeclaration.context = context;
 				} else {
-					const reference =
-						{
+					const reference
+						= {
 							$start: this.shared.startOperand,
 							$isr: this.shared.isrOperand,
 						}[name] ?? new asm.Operand(name, undefined, 'function');
@@ -375,7 +387,7 @@ export class Context {
 					const context = Context.forFunction(this);
 					const declaration = new FunctionDeclaration(
 						reference,
-						parameters.args.flatMap((id) => {
+						parameters.args.flatMap(id => {
 							assert(
 								ast.Node.is(id, ast.identifier),
 								'Parameter identifier missing',
@@ -518,10 +530,10 @@ export class Context {
 
 				for (const expression of inits) {
 					if (
-						ast.Node.is(expression, ast.set) &&
-						ast.Node.is(expression.args[0], ast.identifier) &&
-						typeof expression.args[0].args[0] === 'string' &&
-						!context.get(expression.args[0].args[0])
+						ast.Node.is(expression, ast.set)
+						&& ast.Node.is(expression.args[0], ast.identifier)
+						&& typeof expression.args[0].args[0] === 'string'
+						&& !context.get(expression.args[0].args[0])
 					) {
 						context.apply(
 							new ast.Node(
@@ -531,9 +543,9 @@ export class Context {
 							),
 						);
 					} else if (
-						ast.Node.is(expression, ast.identifier) &&
-						typeof expression.args[0] === 'string' &&
-						!context.declarations.has(expression.args[0])
+						ast.Node.is(expression, ast.identifier)
+						&& typeof expression.args[0] === 'string'
+						&& !context.declarations.has(expression.args[0])
 					) {
 						context.apply(
 							new ast.Node(expression.pos, ast.declarationVariable, expression),
@@ -612,10 +624,10 @@ export class Context {
 				const [expression] = node.args;
 
 				if (
-					ast.Node.is(expression, ast.set) &&
-					ast.Node.is(expression.args[0], ast.identifier) &&
-					typeof expression.args[0].args[0] === 'string' &&
-					!this.get(expression.args[0].args[0])
+					ast.Node.is(expression, ast.set)
+					&& ast.Node.is(expression.args[0], ast.identifier)
+					&& typeof expression.args[0].args[0] === 'string'
+					&& !this.get(expression.args[0].args[0])
 				) {
 					this.apply(
 						new ast.Node(
@@ -625,9 +637,9 @@ export class Context {
 						),
 					);
 				} else if (
-					ast.Node.is(expression, ast.identifier) &&
-					typeof expression.args[0] === 'string' &&
-					!this.declarations.has(expression.args[0])
+					ast.Node.is(expression, ast.identifier)
+					&& typeof expression.args[0] === 'string'
+					&& !this.declarations.has(expression.args[0])
 				) {
 					this.apply(
 						new ast.Node(expression.pos, ast.declarationVariable, expression),
@@ -696,7 +708,7 @@ export class Context {
 						new asm.Operand(
 							'asm',
 							undefined,
-							node.args.map((i) => {
+							node.args.map(i => {
 								if (ast.Node.is(i, ast.literal)) {
 									return i.args[0];
 								}
@@ -892,8 +904,8 @@ export class Context {
 				const [value] = node.args;
 
 				if (
-					ast.Node.is(value, ast.logicalNot) ||
-					ast.Node.is(value, ast.bitwiseNot)
+					ast.Node.is(value, ast.logicalNot)
+					|| ast.Node.is(value, ast.bitwiseNot)
 				) {
 					const [realValue] = value.args;
 					this.accumulate(realValue);
@@ -946,7 +958,7 @@ export class Context {
 					this.add(
 						new asm.Instruction(
 							asm.and,
-							this.getScratchConstant(0xff_ff << places),
+							this.getScratchConstant(0xFF_FF << places),
 						),
 					);
 				}
@@ -982,7 +994,7 @@ export class Context {
 					this.add(
 						new asm.Instruction(
 							asm.and,
-							this.getScratchConstant(0xff_ff >> places),
+							this.getScratchConstant(0xFF_FF >> places),
 						),
 					);
 				}
@@ -1015,7 +1027,7 @@ export class Context {
 				} else {
 					const value = this.getScratchVariable(left);
 					this.add(new asm.Instruction(asm.spa));
-					this.loadConstant(~0xff_ff >> places);
+					this.loadConstant(~0xFF_FF >> places);
 					this.add(new asm.Instruction(asm.sna));
 					this.add(new asm.Instruction(asm.cla));
 					const signedFill = this.getScratchVariable();
@@ -1033,7 +1045,7 @@ export class Context {
 					this.add(
 						new asm.Instruction(
 							asm.and,
-							this.getScratchConstant(0xff_ff >> places),
+							this.getScratchConstant(0xFF_FF >> places),
 						),
 					);
 					this.add(new asm.Instruction(asm.add, signedFill));
@@ -1143,7 +1155,7 @@ export class Context {
 							break;
 						}
 
-						case 0xff_ff: {
+						case 0xFF_FF: {
 							if (ast.Node.is(expression, ast.negative)) {
 								this.accumulate(expression);
 								this.add(new asm.Instruction(asm.cma));
@@ -1191,7 +1203,7 @@ export class Context {
 							break;
 						}
 
-						case 0xff_ff: {
+						case 0xFF_FF: {
 							this.accumulate(expression);
 							break;
 						}
@@ -1233,7 +1245,7 @@ export class Context {
 							break;
 						}
 
-						case 0xff_ff: {
+						case 0xFF_FF: {
 							this.accumulate(expression);
 							this.add(new asm.Instruction(asm.cma));
 							break;
@@ -1305,7 +1317,7 @@ export class Context {
 							break;
 						}
 
-						case 0xff_ff: {
+						case 0xFF_FF: {
 							this.accumulate(expression);
 							this.add(new asm.Instruction(asm.cla));
 							this.add(new asm.Instruction(asm.cma));
@@ -1608,7 +1620,7 @@ export class Context {
 					this.add(
 						new asm.Instruction(
 							asm.and,
-							this.getScratchConstant(0xff_ff << places),
+							this.getScratchConstant(0xFF_FF << places),
 						),
 					);
 				}
@@ -1650,7 +1662,7 @@ export class Context {
 					this.add(
 						new asm.Instruction(
 							asm.and,
-							this.getScratchConstant(0xff_ff >> places),
+							this.getScratchConstant(0xFF_FF >> places),
 						),
 					);
 				}
@@ -1690,7 +1702,7 @@ export class Context {
 				} else if (places > 3) {
 					this.add(new asm.Instruction(asm.lda, scratch, true));
 					this.add(new asm.Instruction(asm.spa));
-					this.loadConstant(~0xff_ff >> places);
+					this.loadConstant(~0xFF_FF >> places);
 					this.add(new asm.Instruction(asm.sna));
 					this.add(new asm.Instruction(asm.cla));
 					const signedFill = this.getScratchVariable();
@@ -1707,7 +1719,7 @@ export class Context {
 					this.add(
 						new asm.Instruction(
 							asm.and,
-							this.getScratchConstant(0xff_ff >> places),
+							this.getScratchConstant(0xFF_FF >> places),
 						),
 					);
 					this.add(new asm.Instruction(asm.add, signedFill));
@@ -1887,9 +1899,9 @@ export class Context {
 	 * @param {T} nodes
 	 */
 	evaluateZipped(...nodes) {
-		const values = nodes.map((i) => this.evaluate(i));
-		const max = Math.max(...values.map((i) => i.length));
-		assert(values.every((i) => i.length === 1 || i.length === max));
+		const values = nodes.map(i => this.evaluate(i));
+		const max = Math.max(...values.map(i => i.length));
+		assert(values.every(i => i.length === 1 || i.length === max));
 		return Array.from(
 			{
 				length: max,
@@ -1897,7 +1909,7 @@ export class Context {
 			(_, i) =>
 				/** @type {{[i in keyof T]: number}} */
 				(
-					values.map((j) => {
+					values.map(j => {
 						const value = j[i] ?? j[0];
 						assert(value);
 						return asm.mod(value);
@@ -1941,7 +1953,7 @@ export class Context {
 					}
 
 					case 'string': {
-						return value.split('').map((i) => {
+						return value.split('').map(i => {
 							const charCode = i.charCodeAt(0);
 							assert(charCode !== undefined);
 							return charCode;
@@ -1956,17 +1968,17 @@ export class Context {
 
 			case ast.negative: {
 				const [value] = node.args;
-				return this.evaluate(value).map((i) => -i);
+				return this.evaluate(value).map(i => -i);
 			}
 
 			case ast.logicalNot: {
 				const [value] = node.args;
-				return this.evaluate(value).map((i) => (i ? 0 : -1));
+				return this.evaluate(value).map(i => (i ? 0 : -1));
 			}
 
 			case ast.bitwiseNot: {
 				const [value] = node.args;
-				return this.evaluate(value).map((i) => ~i);
+				return this.evaluate(value).map(i => ~i);
 			}
 
 			case ast.add: {
@@ -2000,7 +2012,7 @@ export class Context {
 				return this.evaluateZipped(a, b).map(([i, j]) => {
 					assert(j >= 0 && j < 16);
 					i = asm.mod(i);
-					return (i >> j) | asm.mod(i >= 0x80_00 ? ~0xff_ff >> j : 0);
+					return (i >> j) | asm.mod(i >= 0x80_00 ? ~0xFF_FF >> j : 0);
 				});
 			}
 
@@ -2084,7 +2096,7 @@ export class Context {
 
 			case ast.list: {
 				return listIsArray
-					? node.args.flatMap((i) => this.evaluate(i))
+					? node.args.flatMap(i => this.evaluate(i))
 					: this.evaluate(node.args.at(-1));
 			}
 

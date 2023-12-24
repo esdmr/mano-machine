@@ -78,7 +78,7 @@ export class Node {
 		return new Node(
 			undefined,
 			list,
-			...args.flatMap((i) =>
+			...args.flatMap(i =>
 				i instanceof Node && i.type === list ? i.args : i,
 			),
 		);
@@ -95,7 +95,7 @@ export class Node {
 		this.args = args;
 	}
 
-	*[Symbol.iterator]() {
-		yield* this.args;
+	* [Symbol.iterator]() {
+		yield * this.args;
 	}
 }

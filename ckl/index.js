@@ -5,8 +5,8 @@ import * as nearley from '@esdmr/nearley';
 import grammar from './grammar.js';
 import {Context} from './gen.js';
 
-const [input, output = `${input.replace(/\.ckl$/, '')}.asm.sv`] =
-	process.argv.slice(2);
+const [input, output = `${input.replace(/\.ckl$/, '')}.asm.sv`]
+	= process.argv.slice(2);
 assert(input, 'Input file missing');
 assert(output, 'Output file missing');
 

@@ -10,7 +10,7 @@ const stringLike = (name, char) => ({
 	surrogate: {match: /\p{Surrogate}+/u, error: true},
 	[name]: {match: char, pop: 1},
 	escaped_double_quote: '\\"',
-	escaped_single_quote: "\\'",
+	escaped_single_quote: '\\\'',
 	escaped_backtick: '\\`',
 	escaped_backslash: '\\\\',
 	escaped_horizontal_tab: '\\t',
@@ -38,7 +38,7 @@ export const lexer = nearley.lexer.states({
 		whitespace: {match: /[ \t\r\n]+/u, lineBreaks: true},
 
 		double_quote: {match: '"', push: 'string'},
-		single_quote: {match: "'", push: 'character'},
+		single_quote: {match: '\'', push: 'character'},
 
 		identifier: {
 			match: /[a-zA-Z_][a-zA-Z0-9_]*/u,
@@ -123,5 +123,5 @@ export const lexer = nearley.lexer.states({
 		semicolon: ';',
 	},
 	string: stringLike('double_quote', '"'),
-	character: stringLike('single_quote', "'"),
+	character: stringLike('single_quote', '\''),
 });

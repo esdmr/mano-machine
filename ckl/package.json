@@ -5,7 +5,7 @@
 		"@esdmr/nearley": "^3.0.2"
 	},
 	"devDependencies": {
-		"@types/node": "^20",
+		"@types/node": "^20.10.5",
 		"xo": "^0.56.0"
 	},
 	"scripts": {

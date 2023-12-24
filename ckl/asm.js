@@ -94,6 +94,15 @@ export class Instruction {
 		this.mode = mode;
 	}
 
+	/**
+	 * @param {Instruction} instruction
+	 */
+	into(instruction) {
+		this.opcode = instruction.opcode;
+		this.operand = instruction.operand;
+		this.mode = instruction.mode;
+	}
+
 	toString() {
 		switch (this.opcode) {
 			case blank: {

@@ -1,8 +1,5 @@
 {
 	"python.analysis.typeCheckingMode": "strict",
-	"xo.options": {
-		"prettier": true
-	},
 	"cSpell.words": [
 		"fgetc",
 		"ifndef",
