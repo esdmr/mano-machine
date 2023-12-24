@@ -42,8 +42,6 @@ To run everything else you will need the following tools too:
   `./sv.py synthesize --vscode src/SOC.sv`.
 - Translate to VHDL (not tested):
   `./sv.py compile src/SOC.sv --type vhdl --out SOC.vhdl`.
-- Synthesize to FPGA (not tested):
-  `./sv.py compile src/SOC.sv --type fpga --out SOC.fpga`.
 - Run linter:
   `./sv.py lint`.
 - Run tests:
