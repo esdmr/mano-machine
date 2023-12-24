@@ -1,8 +1,9 @@
 # Mano Machine implementation in SystemVerilog
 
-My project for the *Computer Architecture* class. Implements the [Mano machine](https://en.wikipedia.org/wiki/Mano_machine). Includes synthesizable modules
-for the non-IO components, an assembler via macros, and an executable module for
-simulation.
+For the *Computer Architecture* class, I created a project that simulates the
+[Mano machine](https://en.wikipedia.org/wiki/Mano_machine). It consists of
+synthesizable modules for the components that do not involve input/output, a
+macro-based assembler, and a module that can run the simulation.
 
 ## Requirements
 
@@ -12,7 +13,7 @@ the following tools:
 - [Python](https://www.python.org/) v3.12 or later
 - [Icarus Verilog](https://steveicarus.github.io/iverilog/) v12.0 or later
 
-To run everything else you will need the following tools too:
+To run everything else, you will need the following tools too:
 
 - [Node.JS](https://nodejs.org/) v18 or later
 - [`tap-mocha-reporter`](https://www.npmjs.com/package/tap-mocha-reporter)
@@ -49,7 +50,7 @@ To run everything else you will need the following tools too:
   `./sv.py lint`.
 - Run tests:
   `./sv.py test`.
-- Run formatter:
+- Run the formatter:
   `./sv.py format`.
 
 ## Project structure
@@ -64,6 +65,7 @@ To run everything else you will need the following tools too:
 - `vpi`
   - `*.c`: VPI source files for `iverilog`
   - `Makefile`: configuration for Make
+- `ckl`: C-like programming language which compiles to the Mano machine
 - `sv.py`: Script which wraps almost any command that you will run
 - `extended_instructions.py`: Script which generates new (and dare I say mostly
   useless) instructions for the current CPU architecture.
@@ -80,7 +82,7 @@ elegant solution to importing a file only once and in order.
 
 In `test/preamble.sv`, the `IMPORT` macro will be redirected to the `src`
 directory, so `IMPORT(RAM)` imports `src/RAM.sv` and not `test/RAM.sv`.
-Additionally, `test/preamble.sv` includes some macros to assist running
+Additionally, `test/preamble.sv` includes some macros to assist in running
 testbenches.
 
 ## The assembler
@@ -89,9 +91,9 @@ We use SystemVerilog macros to implement the assembler. In a module which will
 accept the assembler, you should implement the `_ASM_SET_MEMORY_` macro which
 will be called with the bytes from the assembled program.
 
-Inside the module body you will use the `ASM_DEFINE_PROGRAM` macro and pass the
-program as its argument. For multiline programs I recommend moving the content
-of the argument into a macro. For very long programs I recommend using `include`
+Inside the module body, you will use the `ASM_DEFINE_PROGRAM` macro and pass the
+program as its argument. For multiline programs, I recommend moving the content
+of the argument into a macro. For very long programs, I recommend using `include`
 and the `.asm.sv` suffix. (The formatter correctly indents the instructions with
 this suffix.)
 
@@ -124,7 +126,7 @@ There is an implementation of a [Test Anything Protocol
 test case, it will output a `ok` or `not ok` line to the stdout which will be
 picked up by a tap consumer.
 
-There is a test runner implemented in python in `sv.py`. You can use the `test`
+There is a test runner implemented in Python in `sv.py`. You can use the `test`
 sub-command to run some or all testbenches. If you are running this command via
 a TTY and have `tap-mocha-reporter` installed, the output will be passed into
 it.
@@ -136,22 +138,21 @@ See [`test/preamble.sv`](test/preamble.sv) for more information.
 
 ## The VPI module for IO
 
-While SystemVerilog has a `$fgetc`, the stdin is line-buffered and so it cannot
-be used for the keyboard module. Additionally, `$fgetc` blocks the process
-waiting for user input.
+While SystemVerilog has `$fgetc`, the standard input is line-buffered, so it
+cannot be used for the keyboard module. Additionally, `$fgetc` waits for user
+input, blocking the simulation.
 
-To replace `$fgetc`, We will implement the necessary logic in C and load the
-`$read_char` function into the `iverilog` simulation. This is implemented inside
-`vpi/io.c`. It supports both Windows (untested) and Linux. If you would like to
-avoid using this module for some reason, you can pass the `--no-vpi` option to
-the `./sv.py run` command.
+To replace `$fgetc`, we will implement the necessary logic in C and load it into
+the `iverilog` simulation. This is implemented inside `vpi/io.c`. It supports
+both Windows (untested) and Linux. If you would like to avoid using this module
+for some reason, you can pass the `--no-vpi` option to the `./sv.py run`
+command.
 
 ## The CKL programming language
 
 Pronounced like “sickle”, it is a C-like programming language specifically for
-the Mano Machine. It is currently a work in progress. It also does not do many
-optimizations, mostly those that the user cannot do without resorting to inline
-assembly.
+the Mano Machine. It is currently a work in progress and also lacks many
+optimizations.
 
 ```c
 // Top-level variable declaration
