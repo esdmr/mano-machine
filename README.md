@@ -20,15 +20,17 @@ To run everything else you will need the following tools too:
 - Make, preferably [GNU Make](https://www.gnu.org/software/make/)
 - [Verible](https://chipsalliance.github.io/verible/) `v0.0-3428-gcfcbb82b` or later
 - [Verilator](https://verilator.org/) `v5.019` or later
-- Either:
+- At least one of:
   - Option A (recommended):
-    - Standalone DigitalJS server, preferably my fork (TODO)
+    - [My fork of DigitalJS online](https://github.com/esdmr/digitaljs-online)
     - [Yosys](https://yosyshq.net/yosys/) `v0.35` or later
     - [cURL](https://curl.se/)
     - [`xdg-open`](http://portland.freedesktop.org/doc/xdg-open.html)
   - Option B:
     - [VS Code](https://code.visualstudio.com/)
     - [DigitalJS extension](https://marketplace.visualstudio.com/items?itemName=yuyichao.digitaljs)
+  - Option C:
+    - [DigitalJS online](http://digitaljs.tilk.eu/)
 
 ## Usage
 
@@ -38,8 +40,9 @@ To run everything else you will need the following tools too:
   `src/program.asm.sv`:
   `./sv.py run src/VirtualComputer.sv`.
 - Synthesize to logic gates:
-  `./sv.py synthesize --online http://localhost:15555 src/SOC.sv` or
-  `./sv.py synthesize --vscode src/SOC.sv`.
+  (A) `./sv.py synthesize --online http://localhost:15555 src/SOC.sv` or
+  (B) `./sv.py synthesize --vscode src/SOC.sv` or
+  (C) `./sv.py synthesize src/SOC.sv`.
 - Translate to VHDL (not tested):
   `./sv.py compile src/SOC.sv --type vhdl --out SOC.vhdl`.
 - Run linter:
@@ -178,7 +181,7 @@ io() {
   // Asynchronous input
   $output = a;
   // Synchronous input
-  $output(a)
+  $output(a);
 
   // I/O flags
   do; while (!$fgo);
