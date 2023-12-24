@@ -28,7 +28,7 @@ export const lexer = nearley.lexer.states({
 		surrogate: {match: /\p{Surrogate}+/u, error: true},
 
 		line_comment: {
-			match: /\/\/[^\n\p{Surrogate}]*(?:\n|$)/u,
+			match: /(?:\/\/|#)[^\n\p{Surrogate}]*(?:\n|$)/u,
 			lineBreaks: true,
 		},
 		block_comment: {

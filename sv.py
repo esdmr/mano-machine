@@ -262,8 +262,11 @@ def run_make(*targets: str):
 def run_pnpm(*args: str):
     return run(["corepack", "pnpm", *args], cwd=Path("ckl"), check=True)
 
-def run_node(*args: str):
-    return run(["node", *args], check=True)
+def run_gcc(*args: str):
+    return run(["gcc", *args], check=True)
+
+def run_node(program: StrOrBytesPath, *args: str):
+    return run(["node", program, *args], check=True)
 
 def formatFile(file: Path):
     with open(file, "r") as f:
@@ -659,7 +662,8 @@ match args.action:
     case Action.CKL:
         assert args.file
         assert args.out
-        run_node("ckl/index.js", args.file, args.out)
+        run_gcc("-E", "-ffreestanding", "-o", args.out, "-x", "c", args.file)
+        run_node("ckl/index.js", args.out, args.out)
 
     case _:
         raise ValueError(f"Unknown action: {args.action}")
