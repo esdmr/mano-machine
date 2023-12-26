@@ -111,7 +111,7 @@ def run_iverilog(
     output_format: Optional[str] = None,
     target_flags: list[str] = [],
     preprocess_only: bool = False,
-    no_vpi: bool = False,
+    input: Optional[Path] = None,
 ):
     args: list[StrOrBytesPath] = [
         "iverilog",
@@ -123,7 +123,9 @@ def run_iverilog(
         file.name,
     ]
 
-    if not no_vpi:
+    if input:
+        args.append(f"-DINPUT={dumps(input.absolute().as_posix())}")
+    else:
         args += [
             "-L",
             Path("vpi").absolute().as_posix(),
@@ -259,14 +261,18 @@ def run_make(*targets: str):
 
     return run(args, cwd=Path("vpi"), check=True)
 
+
 def run_pnpm(*args: str):
     return run(["corepack", "pnpm", *args], cwd=Path("ckl"), check=True)
+
 
 def run_gcc(*args: str):
     return run(["gcc", *args], check=True)
 
+
 def run_node(program: StrOrBytesPath, *args: str):
     return run(["node", program, *args], check=True)
+
 
 def formatFile(file: Path):
     with open(file, "r") as f:
@@ -399,7 +405,7 @@ class Args(Namespace):
     action: Optional[str]
     file: Optional[str]
     files: Optional[list[str]]
-    no_vpi: Optional[bool]
+    input: Optional[str]
     no_iverilog: Optional[bool]
     no_verible: Optional[bool]
     no_verilator: Optional[bool]
@@ -436,7 +442,7 @@ def parse_args():
     for i in {compile, preprocess, ckl}:
         i.add_argument("-o", "--out", required=True)
 
-    run.add_argument("--no-vpi", action="store_true", dest="no_vpi")
+    run.add_argument("--input")
     compile.add_argument("-t", "--type")
     compile.add_argument("-p", "--target-flag", nargs="*", dest="target_flags")
     test.add_argument("-r", "--reporter")
@@ -535,7 +541,8 @@ match args.action:
         file = Path(args.file)
 
         temp_sv = mktemp(file, "")
-        run_iverilog(file, output=temp_sv, no_vpi=bool(args.no_vpi))
+        input = Path(args.input) if args.input else None
+        run_iverilog(file, output=temp_sv, input=input)
 
         run_vvp(temp_sv)
         temp_sv.unlink()

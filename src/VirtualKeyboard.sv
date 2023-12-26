@@ -9,19 +9,24 @@ module VirtualKeyboard (
     input var logic fgi_in,
     input var logic clock
 );
-  var int char = -1;
+  task static queue(input int char);
+    if (char != -1 && !fgi_in) begin
+      data_out = 8'(char & 'hff);
 
-  initial
-    forever
-      @(posedge clock) begin
-        char = $read_char();
+      load_out = '1;
+      @(posedge fgi_in);
+      load_out = '0;
+    end
+  endtask
 
-        if (char != -1 && !fgi_in) begin
-          data_out = 8'(char & 'hff);
+  var int fd = 0;
 
-          load_out = '1;
-          @(posedge fgi_in);
-          load_out = '0;
-        end
-      end
+  initial begin
+`ifdef INPUT
+    fd = $fopen(`INPUT, "r");
+    forever @(posedge clock) if (!fgi_in) queue($fgetc(fd));
+`else
+    forever @(posedge clock) queue($read_char());
+`endif
+  end
 endmodule
